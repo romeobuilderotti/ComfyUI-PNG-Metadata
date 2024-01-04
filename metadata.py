@@ -1,36 +1,10 @@
 import comfy
 
-class SetMetadataString:
-    """
-    Set a single custom metadata field and optionally update 'parameters' field in png metadata
-    """
-    CATEGORY = "utils"
-    RETURN_TYPES = ()
-    OUTPUT_NODE = True
-    FUNCTION = "process"
+class ParametersUpdater:
 
     SET_PARAMETERS = True
-
-    @classmethod
-    def INPUT_TYPES(cls):
-        return {
-            "required": {
-                "name": ("STRING", {}),
-                "value": ("STRING", {"forceInput": True, "default": ""}),
-            },
-            "hidden": {
-                "extra_pnginfo": "EXTRA_PNGINFO"
-            },
-        }
-
-    def process(self, name: str, value: str = "", update_parameters: bool = True, extra_pnginfo=None):
-        if extra_pnginfo is not None and name and value:
-            extra_pnginfo[name] = value
-            if self.SET_PARAMETERS and name != "parameters":
-                extra_pnginfo["parameters"] = self.update_parameters(extra_pnginfo.get("parameters", ""), name, value)
-        return (None,)
-
-    def update_parameters(self, params_string: str, name: str, value: str) -> str:
+    
+    def update_parameters(self, params_string: str, name: str, value) -> str:
         """Modify the a1111 compatible (mostly) parameters string to include the new parameter
         
         Parameters format:
@@ -61,6 +35,62 @@ class SetMetadataString:
                 params = f"{name}: {value}"
             
         return "\n".join(filter(None, [prompt, negative, params]))
+
+class SetMetadataFloat(ParametersUpdater):
+    """
+    Set a single custom metadata field and optionally update 'parameters' field in png metadata
+    """
+    CATEGORY = "utils"
+    RETURN_TYPES = ()
+    OUTPUT_NODE = True
+    FUNCTION = "process"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "name": ("STRING", {}),
+                "value": ("FLOAT", {"forceInput": True, "default": 0}),
+            },
+            "hidden": {
+                "extra_pnginfo": "EXTRA_PNGINFO"
+            },
+        }
+
+    def process(self, name: str, value: float = 0, update_parameters: bool = True, extra_pnginfo=None):
+        if extra_pnginfo is not None and name and value:
+            extra_pnginfo[name] = value
+            if self.SET_PARAMETERS and name != "parameters":
+                extra_pnginfo["parameters"] = self.update_parameters(extra_pnginfo.get("parameters", ""), name, value)
+        return (None,)
+
+class SetMetadataString(ParametersUpdater):
+    """
+    Set a single custom metadata field and optionally update 'parameters' field in png metadata
+    """
+    CATEGORY = "utils"
+    RETURN_TYPES = ()
+    OUTPUT_NODE = True
+    FUNCTION = "process"
+
+    @classmethod
+    def INPUT_TYPES(cls):
+        return {
+            "required": {
+                "name": ("STRING", {}),
+                "value": ("STRING", {"forceInput": True, "default": ""}),
+            },
+            "hidden": {
+                "extra_pnginfo": "EXTRA_PNGINFO"
+            },
+        }
+
+    def process(self, name: str, value: str = "", update_parameters: bool = True, extra_pnginfo=None):
+        if extra_pnginfo is not None and name and value:
+            extra_pnginfo[name] = value
+            if self.SET_PARAMETERS and name != "parameters":
+                extra_pnginfo["parameters"] = self.update_parameters(extra_pnginfo.get("parameters", ""), name, value)
+        return (None,)
 
 class SetMetadataAll(SetMetadataString):
     """
